@@ -1,0 +1,74 @@
+[package]
+authors = ["Dario Nieuwenhuis <dirbaio@dirbaio.net>"]
+edition = "2018"
+name = "fw"
+version = "0.1.0"
+
+[features]
+default = [
+    "defmt-default",
+    "defmt-trace",
+]
+defmt-default = []
+defmt-trace = []
+defmt-debug = []
+defmt-info = []
+defmt-warn = []
+defmt-error = []
+
+[dependencies]
+defmt = { version = "=0.2.1" }
+cortex-m = { version = "0.7.1", features = ["inline-asm"] }
+cortex-m-rt = { version = "0.6.13", features= ["device"] }
+embedded-hal    = { version = "0.2.4" }
+panic-probe = "0.1.0"
+smoltcp    = { git = "https://github.com/smoltcp-rs/smoltcp", branch="dhcp-socket", default-features=false, features = [
+    "defmt", "defmt-trace",
+    "medium-ethernet", "medium-ip",
+    "proto-ipv4", "proto-igmp", "proto-dhcpv4", "proto-ipv6",
+    "socket-raw", "socket-icmp", "socket-udp", "socket-tcp", "socket-dhcpv4"
+] }
+heapless = "0.6.1"
+
+[patch.crates-io]
+defmt = {path = "../defmt"}
+
+[[bin]]
+name = "spam"
+test = false
+bench = false
+[[bin]]
+name = "smoltcp"
+test = false
+bench = false
+
+[profile.dev]
+debug = 2
+debug-assertions = true
+incremental = false
+opt-level = 'z'
+overflow-checks = true
+
+[profile.release]
+codegen-units = 1
+debug = 2
+debug-assertions = false
+incremental = false
+lto = 'fat'
+opt-level = 'z'
+overflow-checks = false
+
+# do not optimize proc-macro crates = faster builds from scratch
+[profile.dev.build-override]
+codegen-units = 8
+debug = false
+debug-assertions = false
+opt-level = 0
+overflow-checks = false
+
+[profile.release.build-override]
+codegen-units = 8
+debug = false
+debug-assertions = false
+opt-level = 0
+overflow-checks = false
