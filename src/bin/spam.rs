@@ -1,11 +1,12 @@
 #![no_std]
 #![no_main]
+#![feature(test)]
 
 #[path = "../rtt.rs"]
 mod rtt;
 
-use core::marker::PhantomData;
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::{compiler_fence, AtomicUsize, Ordering};
+use core::{hint::black_box, marker::PhantomData};
 use defmt::*;
 use panic_probe as _;
 
@@ -24,10 +25,24 @@ defmt::timestamp! {"{=u64}", {
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
+    let mut p = cortex_m::Peripherals::take().unwrap();
+    p.DCB.enable_trace();
+    cortex_m::peripheral::DWT::unlock();
+    p.DWT.enable_cycle_counter();
+
+    compiler_fence(Ordering::SeqCst);
+    let a = cortex_m::peripheral::DWT::get_cycle_count();
+    compiler_fence(Ordering::SeqCst);
+
     run_test();
 
+    compiler_fence(Ordering::SeqCst);
+    let b = cortex_m::peripheral::DWT::get_cycle_count();
+    compiler_fence(Ordering::SeqCst);
+
     let bytes = rtt::bytes_written();
-    info!("Bytes: {=usize}", bytes);
+    info!("bytes:  {=usize}", bytes);
+    defmt::info!("cycles: {=u32}", b.wrapping_sub(a));
 
     loop {}
 }
