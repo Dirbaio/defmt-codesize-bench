@@ -29,6 +29,7 @@ smoltcp    = { git = "https://github.com/smoltcp-rs/smoltcp", branch="dhcp-socke
     "socket-raw", "socket-icmp", "socket-udp", "socket-tcp", "socket-dhcpv4"
 ] }
 heapless = "0.6.1"
+rzcobs = { version = "0.1.1", default-features = false, git="https://github.com/Dirbaio/rzcobs"}
 
 [patch.crates-io]
 defmt = {path = "../defmt"}
